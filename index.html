@@ -7,11 +7,32 @@
     <title>Document</title>
 </head>
 <body>
+    <p>Multi Player Game</p>
+    <button id = 'btnCreate'>New Game</button>
     <script>
+        let clientId = null;
+
+
         let ws = new WebSocket("ws://localhost:9090")
+        // buttons
+        const btnCreate = document.getElementById("btnCreate");
+        btnCreate.addEventListener("click", e => {
+            const payLoad = {
+                "method": "create",
+                "clientId": clientId
+            }
+
+            ws.send(JSON.stringify(payLoad));
+        })
+
         ws.onmessage = message => {
+            //message.data
             const response = JSON.parse(message.data);
-            console.log(response);
+            //connect
+            if (response.method === "connect"){
+                clientId = response.clientId;
+                console.log("Client id Set successfully " + clientId)
+            }
         }
     </script>
 </body>
