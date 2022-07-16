@@ -33,6 +33,12 @@
                 clientId = response.clientId;
                 console.log("Client id Set successfully " + clientId)
             }
+
+            //create
+            if (response.method === "create"){
+                gameId = response.game.id;
+                console.log("game successfully created with id " + response.game.id + " with " + response.game.cells + " cells")  
+            }
         }
     </script>
 </body>
