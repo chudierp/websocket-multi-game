@@ -29,7 +29,7 @@ wsServer.on("request", request => {
             const gameId = guid();
             games[gameId] = {
                 "id": gameId,
-                "cells": 20,
+                "balls": 20, //
                 "clients":[]
             }
             const payLoad = {
@@ -56,7 +56,7 @@ wsServer.on("request", request => {
                 "color": color
             })
             //start the game
-            // if (game.clients.length === 3) updateGameState();
+            if (game.clients.length === 3) updateGameState();
 
             const payLoad = {
                 "method": "join",
@@ -66,6 +66,18 @@ wsServer.on("request", request => {
             game.clients.forEach(c => {
                 clients[c.clientId].connection.send(JSON.stringify(payLoad))
             })
+        }
+        //a user plays
+        if (result.method === "play") {
+            const gameId = result.gameId;
+            const ballId = result.ballId; //
+            const color = result.color;
+
+            let state = games[gameId].state;
+            if (!state)
+                state = {}
+            state[ballId] = color; //
+            games[gameId].state = state; 
         }
     })
 
@@ -83,6 +95,20 @@ wsServer.on("request", request => {
     connection.send(JSON.stringify(payLoad))
 
 })
+function updateGameState() {
+    for (const g of Object.keys(games)) {
+        const game = games[g]
+        const payLoad = {
+            "method": "update",
+            "game": game
+        }
+
+        game.clients.forEach(c=> {
+            clients[c.clientId].connection.send(JSON.stringify(payLoad))
+        })
+    }
+    setTimeout(updateGameState, 500);
+}
 
 function S4() {
     return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
