@@ -11,6 +11,7 @@
     <button id = 'btnCreate'>New Game</button>
     <button id = 'btnJoin'>Join Game</button>
     <input type = 'text' id = 'txtGameId'>
+    <div id  = 'divPlayers'></div>
     <script>
         let clientId = null;
         let gameId = null;
@@ -20,6 +21,7 @@
         const btnCreate = document.getElementById("btnCreate");
         const btnJoin = document.getElementById("btnJoin");
         const txtGameId = document.getElementById("txtGameId");
+        const divPlayers = document.getElementById("divPlayers");
         
         //wiring events
         btnJoin.addEventListener("click", e => {
@@ -48,6 +50,7 @@
         ws.onmessage = message => {
             //message.data
             const response = JSON.parse(message.data);
+            console.log(response);
             //connect
             if (response.method === "connect"){
                 clientId = response.clientId;
@@ -58,6 +61,24 @@
             if (response.method === "create"){
                 gameId = response.game.id;
                 console.log("game successfully created with id " + response.game.id + " with " + response.game.cells + " cells")  
+            }
+            //join
+            if (response.method === "join"){
+                const game = response.game;
+
+                while(divPlayers.firstChild)
+                    divPlayers.removeChild (divPlayers.firstChild)
+
+                game.clients.forEach (c => {
+
+                    const d = document.createElement("div");
+                    d.style.width = "200px";
+                    d.style.background = c.color
+                    d.textContent = c.clientId;
+                    divPlayers.appendChild(d);
+
+                    if (c.clientId === clientId) playerColor = c.color;
+                })
             }
         }
     </script>
