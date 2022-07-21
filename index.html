@@ -8,6 +8,7 @@
 </head>
 <body>
     <p>Multi Player Game</p>
+    <h1 id= 'timeElm'></h1>
     <button id = 'btnCreate'>New Game</button>
     <button id = 'btnJoin'>Join Game</button>
     <input type = 'text' id = 'txtGameId'>
@@ -25,6 +26,21 @@
         const txtGameId = document.getElementById("txtGameId");
         const divPlayers = document.getElementById("divPlayers");
         const divBoard = document.getElementById("divBoard");
+        
+        let timeElm = document.getElementById('timeElm');
+        let timer = function(x) {
+            if(x === 0) {
+                return;
+        }
+
+        timeElm.innerHTML = x;
+
+        return setTimeout(() => {timer(--x)}, 1000)
+        }
+
+        timer(30);
+
+        
         
         //wiring events
         btnJoin.addEventListener("click", e => {
