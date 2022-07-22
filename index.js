@@ -10,6 +10,10 @@ httpServer.listen(9090, () => console.log("Listening.. on 9090"))
 //hashmap clients
 const clients = {};
 const games = {};
+const STATE_WAITING = "waiting for all players to join"; //waiting for other 2 players to show up
+const STATE_READY = "ready to play" //gettting ready to start the game
+const STATE_PLAYING = "game is taking place" //the game has started
+const STATE_OVER = "the game has ended" //the game is complete
 
 const wsServer = new websocketServer({
     "httpServer": httpServer
@@ -30,7 +34,9 @@ wsServer.on("request", request => {
             games[gameId] = {
                 "id": gameId,
                 "balls": 20, //
-                "clients":[]
+                "clients":[],
+                gameState: STATE_WAITING,
+                gameTime: 0
             }
             const payLoad = {
                 "method": "create",
@@ -56,8 +62,13 @@ wsServer.on("request", request => {
                 "color": color
             })
             //start the game
-            if (game.clients.length === 3) updateGameState();
-
+            if (game.clients.length === 3) {
+                game.gameState = STATE_READY;
+                setTimeout(()=> {
+                    updateGameState(game)
+                }, 3000)
+                
+            }
             const payLoad = {
                 "method": "join",
                 "game": game
@@ -95,19 +106,52 @@ wsServer.on("request", request => {
     connection.send(JSON.stringify(payLoad))
 
 })
-function updateGameState() {
-    for (const g of Object.keys(games)) {
-        const game = games[g]
-        const payLoad = {
-            "method": "update",
-            "game": game
-        }
+function updateGameState(game) {
+    // for (const g of Object.keys(games)) {
+    //     const game = games[g]
+    //     const payLoad = {
+    //         "method": "update",
+    //         "game": game
+    //     }
 
-        game.clients.forEach(c=> {
-            clients[c.clientId].connection.send(JSON.stringify(payLoad))
-        })
+    //     game.clients.forEach(c=> {
+    //         clients[c.clientId].connection.send(JSON.stringify(payLoad))
+    //     })
+    
+        // if (game.gameState === STATE_PLAYING) {
+        //     game.gameTime += 500;
+        //     if (game.gameTime >= 30000) {
+        //         endGame(game)
+        //         return
+        //     }
+        //     setTimeout(updateGameState, 500);
+        // }
+    // }
+    // setTimeout(updateGameState, 500);
+    game.gameTime += 500
+    const payLoad = {
+        "method": "update",
+        "game": game,
     }
-    setTimeout(updateGameState, 500);
+
+    game.clients.forEach(c=> {
+        clients[c.clientId].connection.send(JSON.stringify(payLoad))
+    })
+    setTimeout(() => {
+        updateGameState(game)
+    }, 500);
+    
+}
+    // game.clients.forEach(c=> {
+    //     clients[c.clientId].connection.send(JSON.stringify(payLoad))
+    // })
+    // console.log(game)
+    
+
+
+function endGame(game) {
+    game.gameState = STATE_OVER
+    //display game is over to all clients of the game
 }
 
 function S4() {
