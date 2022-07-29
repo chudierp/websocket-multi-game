@@ -30,18 +30,7 @@
         
         const timeElm = document.getElementById('timeElm');
         const gameStateElm = document.getElementById('gameStateElm');
-        // let timer = function(counter) {
-        //     if(counter === -1) {
-        //         return;
-        // }
         
-
-        // timeElm.innerHTML = counter;
-
-        // return setTimeout(() => {timer(--counter)}, 1000)
-        // }
-
-        // timer(30);
 
         
         
@@ -86,19 +75,7 @@
             }
             console.log('************')
             console.log(response.method, response.game.gameTime)
-             //update
-            if (response.method === "update"){
-                //{1: "red", 1}
-                if (!response.game.state) return;
-                timeElm.innerHTML = respose.game.gameTime
-                gameStateElm.innerHTML = 'Game taking place'
-                for(const b of Object.keys(response.game.state))
-                {
-                    const color = response.game.state[b];
-                    const ballObject = document.getElementById("ball" + b); //
-                    ballObject.style.backgroundColor = color//
-                }
-            }
+            
             //join
             if (response.method === "join"){
                 const game = response.game;
@@ -117,7 +94,24 @@
                     if (c.clientId === clientId) playerColor = c.color;
                 })
                 gameStateElm.innerHTML = 'Players are joining the game'
-                timeElm.innerHTML = 0
+                //Display how many people have joined the game
+               if (game.clients.length === 3) {
+                    gameStateElm.innerHTML = 'Game is locked and ready to be played in :'
+                
+                    let timer = function(counter) {
+                        if(counter === -1) {
+                            return;
+                        }
+                         
+
+                        timeElm.innerHTML = counter;
+
+                        return setTimeout(() => {timer(--counter)}, 1000)
+                    }
+
+                    timer(3);
+                }
+                
                 
                 while(divBoard.firstChild)
                 divBoard.removeChild (divBoard.firstChild)
@@ -141,6 +135,32 @@
                         ws.send(JSON.stringify(payLoad))
                     })
                     divBoard.appendChild(b);
+                }
+            }
+            //update
+            if (response.method === "update"){
+                //{1: "red", 1}
+                if (!response.game.state) return;
+                timeElm.innerHTML = response.game.gameTime
+                // let gameCountdown = function(counter) {
+                //         if(counter === -1) {
+                //             return;
+                //         }
+                         
+
+                //         timeElm.innerHTML = counter;
+
+                //         return setTimeout(() => {gameCountdown(--counter)}, 1000)
+                //     }
+
+                //     gameCountdown(30);
+                
+                gameStateElm.innerHTML = 'Game is taking place'
+                for(const b of Object.keys(response.game.state))
+                {
+                    const color = response.game.state[b];
+                    const ballObject = document.getElementById("ball" + b); //
+                    ballObject.style.backgroundColor = color//
                 }
             }
         }

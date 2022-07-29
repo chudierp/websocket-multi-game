@@ -61,24 +61,28 @@ wsServer.on("request", request => {
                 "clientId": clientId,
                 "color": color
             })
-            //start the game
-            if (game.clients.length === 3) {
-                game.gameState = STATE_READY;
-                setTimeout(()=> {
-                    updateGameState(game)
-                }, 3000)
-                
-            }
             const payLoad = {
                 "method": "join",
                 "game": game
             }
+            //start the game
+            if (game.clients.length === 3) {
+                // payLoad.method = 'countdown'
+                game.gameState = STATE_READY;
+                setTimeout(()=> {
+                    game.gameState = STATE_PLAYING //GAME STARTS AFTER 3 SECONDS
+                    updateGameState(game)
+                }, 3000)
+                
+            }
+            
             //loop through all clients and tell them that people have joined
             game.clients.forEach(c => {
                 clients[c.clientId].connection.send(JSON.stringify(payLoad))
             })
         }
         //a user plays
+        
         if (result.method === "play") {
             const gameId = result.gameId;
             const ballId = result.ballId; //
@@ -118,17 +122,10 @@ function updateGameState(game) {
     //         clients[c.clientId].connection.send(JSON.stringify(payLoad))
     //     })
     
-        // if (game.gameState === STATE_PLAYING) {
-        //     game.gameTime += 500;
-        //     if (game.gameTime >= 30000) {
-        //         endGame(game)
-        //         return
-        //     }
-        //     setTimeout(updateGameState, 500);
-        // }
+        
     // }
-    // setTimeout(updateGameState, 500);
-    game.gameTime += 500
+    // setTimeout(updateGameState, 1000);
+    // game.gameTime += 1000
     const payLoad = {
         "method": "update",
         "game": game,
@@ -137,9 +134,18 @@ function updateGameState(game) {
     game.clients.forEach(c=> {
         clients[c.clientId].connection.send(JSON.stringify(payLoad))
     })
+    //check the game.gameTime!!! if its > 1000 x 60 the game is over
+    if (game.gameState === STATE_PLAYING) {
+        game.gameTime += 1000;
+        if (game.gameTime >= 30500) {
+            endGame(game)
+            return
+        }
+    }
+    
     setTimeout(() => {
         updateGameState(game)
-    }, 500);
+    }, 1000);
     
 }
     // game.clients.forEach(c=> {
@@ -150,8 +156,22 @@ function updateGameState(game) {
 
 
 function endGame(game) {
+   //display game is over to all clients of the game
+    const payLoad = {
+        "method": "gameover",
+        "game": game,
+    }
+
+    game.clients.forEach(c=> {
+        clients[c.clientId].connection.send(JSON.stringify(payLoad))
+    })
+    
     game.gameState = STATE_OVER
-    //display game is over to all clients of the game
+    // if (game.gameState = STATE_OVER) {
+    //     //save colors and how many times they appear on the board and return the largest
+    //     return
+    // }
+    
 }
 
 function S4() {
