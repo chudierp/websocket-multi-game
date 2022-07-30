@@ -10,7 +10,9 @@ httpServer.listen(9090, () => console.log("Listening.. on 9090"))
 //hashmap clients
 const clients = {};
 const games = {};
-const STATE_WAITING = "waiting for all players to join"; //waiting for other 2 players to show up
+
+const STATE_CREATED = "A game has been created"
+const STATE_WAITING = "waiting for all players to join" //waiting for other 2 players to show up
 const STATE_READY = "ready to play" //gettting ready to start the game
 const STATE_PLAYING = "game is taking place" //the game has started
 const STATE_OVER = "the game has ended" //the game is complete
@@ -33,10 +35,12 @@ wsServer.on("request", request => {
             const gameId = guid();
             games[gameId] = {
                 "id": gameId,
-                "balls": 20, //
+                // "balls": 20, //
                 "clients":[],
-                gameState: STATE_WAITING,
-                gameTime: 0
+                gameBoard: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                gameState: STATE_CREATED,
+                gameTime: 0,
+                
             }
             const payLoad = {
                 "method": "create",
@@ -51,12 +55,13 @@ wsServer.on("request", request => {
             const clientId = result.clientId;
             const gameId = result.gameId;
             const game = games[gameId];
+            game.gameState = STATE_WAITING
             if (game.clients.length >= 3) 
             {
                 //sorry max players reach
                 return;
             }
-            const color =  {"0": "Red", "1": "Green", "2": "Blue"}[game.clients.length]
+            const color =  {"0": "tomato", "1": "lime", "2": "cornflowerblue"}[game.clients.length]
             game.clients.push({
                 "clientId": clientId,
                 "color": color
@@ -84,9 +89,11 @@ wsServer.on("request", request => {
         //a user plays
         
         if (result.method === "play") {
+            
             const gameId = result.gameId;
             const ballId = result.ballId; //
             const color = result.color;
+            // const score = result.score
 
             let state = games[gameId].state;
             if (!state)
@@ -110,27 +117,13 @@ wsServer.on("request", request => {
     connection.send(JSON.stringify(payLoad))
 
 })
-function updateGameState(game) {
-    // for (const g of Object.keys(games)) {
-    //     const game = games[g]
-    //     const payLoad = {
-    //         "method": "update",
-    //         "game": game
-    //     }
 
-    //     game.clients.forEach(c=> {
-    //         clients[c.clientId].connection.send(JSON.stringify(payLoad))
-    //     })
-    
-        
-    // }
-    // setTimeout(updateGameState, 1000);
-    // game.gameTime += 1000
+function updateGameState(game) {
     const payLoad = {
         "method": "update",
         "game": game,
     }
-
+    
     game.clients.forEach(c=> {
         clients[c.clientId].connection.send(JSON.stringify(payLoad))
     })
@@ -138,6 +131,7 @@ function updateGameState(game) {
     if (game.gameState === STATE_PLAYING) {
         game.gameTime += 1000;
         if (game.gameTime >= 30500) {
+            game.gameState = STATE_OVER
             endGame(game)
             return
         }
@@ -147,30 +141,25 @@ function updateGameState(game) {
         updateGameState(game)
     }, 1000);
     
-}
-    // game.clients.forEach(c=> {
-    //     clients[c.clientId].connection.send(JSON.stringify(payLoad))
-    // })
-    // console.log(game)
-    
-
-
+}    
 function endGame(game) {
    //display game is over to all clients of the game
     const payLoad = {
         "method": "gameover",
         "game": game,
+        "score": 0
     }
 
     game.clients.forEach(c=> {
         clients[c.clientId].connection.send(JSON.stringify(payLoad))
     })
     
-    game.gameState = STATE_OVER
-    // if (game.gameState = STATE_OVER) {
-    //     //save colors and how many times they appear on the board and return the largest
-    //     return
-    // }
+    
+    if (game.gameState = STATE_OVER) {
+        //save  how many times each color appears on the board and return the largest
+        
+        return
+    }
     
 }
 

@@ -1,0 +1,33 @@
+Add a timer ✅[I added two timers, one that counts the game before it starts, and the other that counts down the actual game]
+
+Displays game state to all players ✅ [lets players know when a game has been created, when people are joining, when game is being played and when the game is over]
+
+Name the game
+    - Join game by putting name of the game
+    - clicking url link
+
+See what games are live and join
+
+Can create url slug for the game(pretty urls)
+
+Create usernames 
+
+Notify the game room that someone joined
+
+
+ Add a database with prisma 
+    - save who played them and won
+
+Go live 
+
+Instruction manuel on readme
+
+Improve css 
+
+Name and landing page to add to portfolio(join game, new game, )
+
+Declare winner. 
+
+Add a score board
+
+Maybe an elimination process

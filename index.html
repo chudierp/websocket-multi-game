@@ -19,6 +19,7 @@
         let clientId = null;
         let gameId = null;
         let playerColor = null;
+        let playerScore = null;
 
         let ws = new WebSocket("ws://localhost:9090")
         // buttons
@@ -70,11 +71,12 @@
             //create
             if (response.method === "create"){
                 gameId = response.game.id;
-                gameStateElm.innerHTML = 'The game has been created'
-                console.log("game successfully created with id " + response.game.id + " with " + response.game.cells + " cells")  
+                gameStateElm.innerHTML = 'A game has been created as ' + gameId
+                console.log("game successfully created with id " +  response.game.id + " with " + response.game.cells + " cells")  
+                
             }
             console.log('************')
-            console.log(response.method, response.game.gameTime)
+            console.log(response.method)
             
             //join
             if (response.method === "join"){
@@ -115,21 +117,65 @@
                 
                 while(divBoard.firstChild)
                 divBoard.removeChild (divBoard.firstChild)
-
-                for (let i = 0; i < game.balls; i++) { //
+        
+                createGameboard(response.game.gameBoard)
+                // drawGameboard(response.game.gameBoard)
+                // for (let i = 0; i < game.balls; i++) { //
+                //     const b = document.createElement("button");
+                //     //b stands for button[box ]
+                //     b.id = "ball" + (i +1); //
+                //     b.tag = i+1
+                //     b.textContent = i+1
+                //     b.style.width = "150px"
+                //     b.style.height = "150px"
+                //     b.addEventListener("click", e => {
+                //         b.style.background = playerColor //add or subtract to playerScore
+                //         const payLoad = {
+                //             "method": "play",
+                //             "clientId": clientId,
+                //             "gameId": gameId,
+                //             "ballId": b.tag, 
+                //             "color": playerColor,
+                //             "score": playerScore
+                //         }
+                //         ws.send(JSON.stringify(payLoad))
+                //     })
+                //     divBoard.appendChild(b);
+                // }
+            }
+            //update
+            if (response.method === "update"){
+                //{1: "red", 1}
+                if (!response.game.state) return;
+                timeElm.innerHTML = response.game.gameTime
+                gameStateElm.innerHTML = 'Game is taking place'
+                drawGameboard(response.game.gameBoard)
+                // for(const b of Object.keys(response.game.state))
+                // {
+                //     const color = response.game.state[b];
+                //     const ballObject = document.getElementById("ball" + b); //
+                //     ballObject.style.backgroundColor = color//
+                // }
+            }
+            if (response.method === "gameover") {
+                gameStateElm.innerHTML = 'Game has ended!'
+            }
+            function createGameboard(arr) {
+                for (let i = 0; i < arr.length; i++) { //
                     const b = document.createElement("button");
+                    //b stands for button[box ]
                     b.id = "ball" + (i +1); //
                     b.tag = i+1
                     b.textContent = i+1
                     b.style.width = "150px"
                     b.style.height = "150px"
                     b.addEventListener("click", e => {
-                        b.style.background = playerColor
+                        b.style.background = playerColor //add or subtract to playerScore
                         const payLoad = {
                             "method": "play",
                             "clientId": clientId,
                             "gameId": gameId,
-                            "ballId": b.tag, //
+                            "ballId": b.tag, 
                             "color": playerColor
                         }
                         ws.send(JSON.stringify(payLoad))
@@ -137,30 +183,14 @@
                     divBoard.appendChild(b);
                 }
             }
-            //update
-            if (response.method === "update"){
-                //{1: "red", 1}
-                if (!response.game.state) return;
-                timeElm.innerHTML = response.game.gameTime
-                // let gameCountdown = function(counter) {
-                //         if(counter === -1) {
-                //             return;
-                //         }
-                         
-
-                //         timeElm.innerHTML = counter;
-
-                //         return setTimeout(() => {gameCountdown(--counter)}, 1000)
-                //     }
-
-                //     gameCountdown(30);
-                
-                gameStateElm.innerHTML = 'Game is taking place'
-                for(const b of Object.keys(response.game.state))
-                {
-                    const color = response.game.state[b];
-                    const ballObject = document.getElementById("ball" + b); //
-                    ballObject.style.backgroundColor = color//
+            function drawGameboard(arr) {
+                for (let i = 0; i < arr.length; i++) { 
+                    const b = document.getElementById("ball" + (i +1)) 
+                    for(const b of Object.keys(response.game.state)) {
+                        const color = response.game.state[b];
+                        const ballObject = document.getElementById("ball" + b); 
+                        ballObject.style.backgroundColor = color//
+                    }
                 }
             }
         }
