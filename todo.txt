@@ -7,7 +7,7 @@ Name the game
     - clicking url link
 
 See what games are live and join
-
+----
 Can create url slug for the game(pretty urls)
 
 Create usernames 
